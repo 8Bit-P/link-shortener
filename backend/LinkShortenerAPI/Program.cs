@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using LinkShortenerAPI.Models;
-using LinkShortenerAPI.Data; // Make sure this is the correct namespace for your DB context.
+using LinkShortenerAPI.Data; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +16,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
     )
 );
+
+// Register custom services
+builder.Services.AddScoped<IUrlService, UrlService>();
+builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 
 var app = builder.Build();
 

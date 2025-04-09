@@ -22,11 +22,13 @@ namespace LinkShortenerAPI.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("LinkShortenerAPI.Models.ShortenedUrl", b =>
+            modelBuilder.Entity("LinkShortenerAPI.Models.Enitities.ShortenedUrl", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccessCount")
                         .HasColumnType("int");
@@ -50,13 +52,13 @@ namespace LinkShortenerAPI.Migrations
                     b.ToTable("ShortenedUrls");
                 });
 
-            modelBuilder.Entity("LinkShortenerAPI.Models.UrlAccessLog", b =>
+            modelBuilder.Entity("LinkShortenerAPI.Models.Enitities.UrlAccessLog", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("AccessTime")
                         .HasColumnType("datetime(6)");
@@ -64,34 +66,31 @@ namespace LinkShortenerAPI.Migrations
                     b.Property<string>("IpAddress")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UrlId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("UrlId1")
-                        .HasColumnType("char(36)");
+                    b.Property<long>("UrlId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UrlId1");
+                    b.HasIndex("UrlId");
 
-                    b.ToTable("UrlAccessLog");
+                    b.ToTable("UrlAccessLogs");
                 });
 
-            modelBuilder.Entity("LinkShortenerAPI.Models.UrlAccessLog", b =>
+            modelBuilder.Entity("LinkShortenerAPI.Models.Enitities.UrlAccessLog", b =>
                 {
-                    b.HasOne("LinkShortenerAPI.Models.ShortenedUrl", "Url")
+                    b.HasOne("LinkShortenerAPI.Models.Enitities.ShortenedUrl", "Url")
                         .WithMany("AccessLogs")
-                        .HasForeignKey("UrlId1")
+                        .HasForeignKey("UrlId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Url");
                 });
 
-            modelBuilder.Entity("LinkShortenerAPI.Models.ShortenedUrl", b =>
+            modelBuilder.Entity("LinkShortenerAPI.Models.Enitities.ShortenedUrl", b =>
                 {
                     b.Navigation("AccessLogs");
                 });

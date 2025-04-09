@@ -1,4 +1,6 @@
-﻿using LinkShortenerAPI.Models;
+﻿using Azure.Core;
+using LinkShortenerAPI.Models.DTOs;
+using LinkShortenerAPI.Models.Enitities;
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
@@ -6,35 +8,30 @@ using Microsoft.AspNetCore.Mvc;
 public class UrlController : ControllerBase
 {
     private readonly ILogger<UrlController> _logger;
+    private readonly IUrlService _urlService; 
 
-    public UrlController(ILogger<UrlController> logger)
+    public UrlController(ILogger<UrlController> logger, IUrlService urlService)
     {
         _logger = logger;
+        _urlService = urlService;
     }
+
+
 
     [HttpPost]
-    public ActionResult<ShortenedUrl> CreateShortUrl([FromBody] string originalUrl)
+    public ActionResult<ShortenedUrl> CreateShortUrl([FromBody] UrlRequest request)
     {
-        var result = new ShortenedUrl
-        {
-            Id = new Guid(),
-            OriginalUrl = originalUrl,
-            ShortCode = "test"
-        };
+        var shortUrl = _urlService.ShortenUrl(request);
 
-        return CreatedAtAction(nameof(GetByShortCode), new { shortCode = result.ShortCode }, result);
+        return CreatedAtAction(nameof(GetByShortCode), new { shortCode = shortUrl.ShortCode }, shortUrl);
     }
+
 
     [HttpGet("{shortCode}")]
     public ActionResult<ShortenedUrl> GetByShortCode(string shortCode)
     {
-        var result = new ShortenedUrl
-        {
-            Id = new Guid(),
-            OriginalUrl = "https://example.com",
-            ShortCode = shortCode
-        };
+        var shortUrl = _urlService.GetUrlByShortCode(shortCode);
 
-        return Ok(result);
+        return Ok(shortUrl);
     }
 }

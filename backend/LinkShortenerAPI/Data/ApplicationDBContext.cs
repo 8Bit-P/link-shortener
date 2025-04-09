@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LinkShortenerAPI.Models;
+using LinkShortenerAPI.Models.Enitities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LinkShortenerAPI.Data
