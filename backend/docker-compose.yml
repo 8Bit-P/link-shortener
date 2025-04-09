@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
-  api:
+  linkshortenerapi:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./LinkShortenerAPI  # Points to the directory containing the Dockerfile
+      dockerfile: Dockerfile       # Optional: If the Dockerfile is named differently
     container_name: linkshortener-api
     ports:
       - "8080:8080"
@@ -14,7 +12,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=server=db;port=3306;database=mydatabase;user=myuser;password=mypassword;
-    # Optional: You can also use a retry mechanism or health check here for the API.
 
   db:
     image: mysql:latest
@@ -28,12 +25,6 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
 
 volumes:
   db_data:

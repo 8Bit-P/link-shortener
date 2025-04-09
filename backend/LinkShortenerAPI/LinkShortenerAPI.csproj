@@ -7,6 +7,7 @@
 		<UserSecretsId>e4ca564a-12f9-45c5-b652-b67835818d76</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>.</DockerfileContext>
+		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,5 +34,7 @@
 		<!-- Swagger for API documentation -->
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
+
+
 
 </Project>

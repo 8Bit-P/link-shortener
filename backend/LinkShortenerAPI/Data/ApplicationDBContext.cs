@@ -13,5 +13,15 @@ namespace LinkShortenerAPI.Data
         public DbSet<ShortenedUrl> ShortenedUrls { get; set; }
 
         public DbSet<UrlAccessLog> UrlAccessLogs{ get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Ensure ShortCode is unique using Fluent API
+            modelBuilder.Entity<ShortenedUrl>()
+                .HasIndex(u => u.ShortCode)
+                .IsUnique();
+        }
     }
 }

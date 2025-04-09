@@ -4,7 +4,7 @@ namespace LinkShortenerAPI.Services.Utils
 {
     public class Base62Encoder
     {
-        private const string Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        private const string Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         private static readonly int Base = Alphabet.Length;
 
         public static string Encode(long number)

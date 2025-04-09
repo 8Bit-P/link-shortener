@@ -2,12 +2,13 @@
 using LinkShortenerAPI.Models.DTOs;
 using LinkShortenerAPI.Models.Enitities;
 using LinkShortenerAPI.Services.Utils;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 
 public interface IUrlService
 {
-    ShortenedUrl ShortenUrl(UrlRequest request);
-    ShortenedUrl? GetUrlByShortCode(string shortCode);
+    Task<ShortenedUrl> ShortenUrl(UrlRequest request);
+    Task<ShortenedUrl?> GetUrlByShortCode(string shortCode);
+    Task<ShortenedUrl?> UpdateShortUrl(UpdateUrlRequest request);
+    Task<bool> DeleteShortenedUrl(string shortCode);
 }
 
 public class UrlService : IUrlService
@@ -20,31 +21,49 @@ public class UrlService : IUrlService
     }
 
     /// <summary>
-    /// Creates a shortened url register in the DB and returns it 
+    /// Creates a shortened URL entry in the DB and returns it 
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public ShortenedUrl ShortenUrl(UrlRequest request)
+    public async Task<ShortenedUrl> ShortenUrl(UrlRequest request)
     {
         var newShortenedUrl = new ShortenedUrl
         {
             OriginalUrl = request.OriginalURL,
+            UpdatedAt = DateTime.UtcNow
         };
 
-        _urlRepository.Add(newShortenedUrl);
+        await _urlRepository.AddAsync(newShortenedUrl);  
 
         var shortenedUrlID = newShortenedUrl.Id;
         var shortCode = Base62Encoder.Encode(shortenedUrlID);
 
         newShortenedUrl.ShortCode = shortCode;
 
-        _urlRepository.Update(newShortenedUrl);
+        await _urlRepository.UpdateAsync(newShortenedUrl);  
 
         return newShortenedUrl;
     }
 
-    public ShortenedUrl? GetUrlByShortCode(string shortCode)
+    public async Task<ShortenedUrl?> GetUrlByShortCode(string shortCode)
     {
-        return _urlRepository.GetByShortCode(shortCode);
+        return await _urlRepository.GetByShortCodeAsync(shortCode);  
+    }
+
+    public async Task<ShortenedUrl?> UpdateShortUrl(UpdateUrlRequest request)
+    {
+        var shortenedUrl = new ShortenedUrl()
+        {
+            ShortCode = request.ShortCode,
+            UpdatedAt = DateTime.UtcNow,
+            OriginalUrl = request.NewURL
+        };
+
+        return await _urlRepository.UpdateAsync(shortenedUrl); 
+    }
+
+    public async Task<bool> DeleteShortenedUrl(string shortCode)
+    {
+        return await _urlRepository.DeleteAsync(shortCode);  
     }
 }

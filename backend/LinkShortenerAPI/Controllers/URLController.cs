@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 public class UrlController : ControllerBase
 {
     private readonly ILogger<UrlController> _logger;
-    private readonly IUrlService _urlService; 
+    private readonly IUrlService _urlService;
 
     public UrlController(ILogger<UrlController> logger, IUrlService urlService)
     {
@@ -16,22 +16,46 @@ public class UrlController : ControllerBase
         _urlService = urlService;
     }
 
-
-
     [HttpPost]
-    public ActionResult<ShortenedUrl> CreateShortUrl([FromBody] UrlRequest request)
+    public async Task<ActionResult<ShortenedUrl>> CreateShortUrl([FromBody] UrlRequest request)
     {
-        var shortUrl = _urlService.ShortenUrl(request);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        return CreatedAtAction(nameof(GetByShortCode), new { shortCode = shortUrl.ShortCode }, shortUrl);
+        var shortUrl = await _urlService.ShortenUrl(request);
+
+        return CreatedAtAction(nameof(RedirectToOriginal), new { shortCode = shortUrl.ShortCode }, shortUrl);
     }
 
 
     [HttpGet("{shortCode}")]
-    public ActionResult<ShortenedUrl> GetByShortCode(string shortCode)
+    public async Task<IActionResult> RedirectToOriginal(string shortCode)
     {
-        var shortUrl = _urlService.GetUrlByShortCode(shortCode);
+        var result = await _urlService.GetUrlByShortCode(shortCode);
+        if (result == null)
+            return NotFound();
 
-        return Ok(shortUrl);
+        return Redirect(result.OriginalUrl);
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateShortUrl([FromBody] UpdateUrlRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _urlService.UpdateShortUrl(request);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{shortCode}")]
+    public async Task<IActionResult> DeleteShortUrl(string shortCode)
+    {
+        var success = await _urlService.DeleteShortenedUrl(shortCode);
+        if (!success)
+            return NotFound();
+
+        return NoContent();
     }
 }

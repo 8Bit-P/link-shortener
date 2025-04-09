@@ -1,12 +1,15 @@
 using LinkShortenerAPI.Data;
 using LinkShortenerAPI.Models.Enitities;
+using Microsoft.EntityFrameworkCore;
 
 public interface IUrlRepository
 {
-    void Add(ShortenedUrl url);
-    void Update(ShortenedUrl url);
-    ShortenedUrl? GetByShortCode(string shortCode);
+    Task AddAsync(ShortenedUrl url);
+    Task<ShortenedUrl> UpdateAsync(ShortenedUrl url);
+    Task<ShortenedUrl?> GetByShortCodeAsync(string shortCode);
+    Task<bool> DeleteAsync(string shortCode);
 }
+
 
 // UrlRepository.cs (Repository Implementation)
 public class UrlRepository : IUrlRepository
@@ -18,21 +21,50 @@ public class UrlRepository : IUrlRepository
         _context = context;
     }
 
-    public void Add(ShortenedUrl url)
+    public async Task AddAsync(ShortenedUrl url)
     {
-        _context.ShortenedUrls.Add(url);
-        _context.SaveChanges();
+        await _context.ShortenedUrls.AddAsync(url);
+        await _context.SaveChangesAsync();
     }
 
-    public void Update(ShortenedUrl url)
+    public async Task<ShortenedUrl> UpdateAsync(ShortenedUrl url)
     {
-        _context.ShortenedUrls.Update(url); 
-        _context.SaveChanges();
+        if (string.IsNullOrWhiteSpace(url.ShortCode))
+        {
+            throw new ArgumentException("ShortCode cannot be null or empty for updating a ShortenedUrl.", nameof(url.ShortCode));
+        }
+
+        var entity = await _context.ShortenedUrls.FirstOrDefaultAsync(u => u.ShortCode == url.ShortCode);
+
+        if (entity != null)
+        {
+            entity.OriginalUrl = url.OriginalUrl;
+            await _context.SaveChangesAsync();
+            return entity;
+
+        }
+        else
+        {
+            throw new KeyNotFoundException($"Shortened URL with ShortCode '{url.ShortCode}' not found.");
+        }
     }
 
-    public ShortenedUrl? GetByShortCode(string shortCode)
+    public async Task<bool> DeleteAsync(string shortCode)
     {
-        return _context.ShortenedUrls
-            .FirstOrDefault(u => u.ShortCode == shortCode);
+        var entity = await _context.ShortenedUrls.FirstOrDefaultAsync(u => u.ShortCode == shortCode);
+        if (entity != null)
+        {
+            _context.ShortenedUrls.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<ShortenedUrl?> GetByShortCodeAsync(string shortCode)
+    {
+        return await _context.ShortenedUrls.FirstOrDefaultAsync(u => u.ShortCode == shortCode);
     }
 }
