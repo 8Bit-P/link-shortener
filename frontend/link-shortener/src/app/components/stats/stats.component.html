@@ -1,0 +1,112 @@
+<div
+  class="shorten-url border-1 border-gray-200 shadow-sm rounded-lg p-6 bg-white w-full max-w-3xl mx-auto mt-8"
+>
+  <div class="flex justify-between items-center text-left">
+    <!-- Left side -->
+    <div class="flex flex-col justify-center">
+      <div class="flex items-center mb-0.5">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-gray-500 mr-2"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 14V20"></path>
+          <path d="M12 8V20"></path>
+          <path d="M18 4V20"></path>
+        </svg>
+
+        <h2 class="text-2xl font-semibold mb-0.5">Link Statistics</h2>
+      </div>
+      <p class="text-md font-medium text-gray-500">
+        Track performance of your shortened URL
+      </p>
+    </div>
+
+    <!-- Right side -->
+    <div class="flex flex-col justify-center text-right">
+      <h2 class="text-3xl font-bold mb-0.5">{{ totalClicks }}</h2>
+      <p class="text-sm font-sm text-gray-500">Total Clicks</p>
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-start">
+    <p-selectbutton
+      [options]="statOptions"
+      [(ngModel)]="statToShow"
+      optionLabel="label"
+      optionValue="value"
+      size="small"
+    >
+    </p-selectbutton>
+  </div>
+
+  @if(statToShow === 'clicks') {
+  <div
+    class="mt-8 border-1 border-gray-200 shadow-sm rounded-lg p-6 pl-10 pr-10"
+  >
+    <p-chart type="bar" [data]="clicksData" [options]="clicksOptions" />
+  </div>
+  } @else if(statToShow === 'referrers'){
+  <table class="min-w-full table-auto mt-8">
+    <tbody>
+      @for(referrer of referrersData; track $index) {
+      <tr>
+        <!-- Referrer Name -->
+        <td class="px-4 py-2 text-left">{{ referrer.referrer }}</td>
+
+        <td class="px-4 py-2">
+          <div class="flex items-center gap-2">
+            <!-- Progress Bar expanding from right to left -->
+            <div class="flex-1 bg-transparent rounded-full h-2">
+              <div
+                class="bg-gray-200 h-2 rounded-full"
+                [style.width.%]="(referrer.clicks / totalClicks) * 100"
+                style="margin-left: auto"
+              ></div>
+            </div>
+            <!-- Clicks Value -->
+            <span class="ml-2 font-bold w-8">{{
+              referrer.clicks | shortenNumber
+            }}</span>
+          </div>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+
+  } @else if(statToShow === 'locations'){
+  <table class="min-w-full table-auto mt-8">
+    <tbody>
+      @for(location of locationsData; track $index) {
+      <tr>
+        <!-- Referrer Name -->
+        <td class="px-4 py-2 text-left">{{ location.country }}</td>
+
+        <td class="px-4 py-2">
+          <div class="flex items-center gap-2">
+            <!-- Progress Bar expanding from right to left -->
+            <div class="flex-1 bg-transparent rounded-full h-2">
+              <div
+                class="bg-gray-200 h-2 rounded-full"
+                [style.width.%]="(location.clicks / totalClicks) * 100"
+                style="margin-left: auto"
+              ></div>
+            </div>
+            <!-- Clicks Value -->
+            <span class="ml-2 font-bold w-8">{{
+              location.clicks | shortenNumber
+            }}</span>
+          </div>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+</div>
