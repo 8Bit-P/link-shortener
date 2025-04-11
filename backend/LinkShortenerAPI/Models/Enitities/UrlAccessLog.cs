@@ -7,7 +7,8 @@
         public ShortenedUrl Url { get; set; } = null!;
 
         public DateTime AccessTime { get; set; } = DateTime.UtcNow;
-        public string? IpAddress { get; set; }
+        public string? Country { get; set; }
+        public string? Referer { get; set; }
         public string? UserAgent { get; set; }
     }
 
