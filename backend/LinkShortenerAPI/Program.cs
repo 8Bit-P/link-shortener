@@ -21,7 +21,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUrlService, UrlService>();
 builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin() 
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
+
+
+app.Urls.Add("http://*:8080");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

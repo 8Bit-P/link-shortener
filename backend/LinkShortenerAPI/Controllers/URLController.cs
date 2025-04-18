@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using LinkShortenerAPI.Models.DTOs;
-using LinkShortenerAPI.Models.Enitities;
+﻿using LinkShortenerAPI.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
@@ -24,12 +22,12 @@ public class UrlController : ControllerBase
 
         var shortUrl = await _urlService.ShortenUrl(request);
 
-        return CreatedAtAction(nameof(RedirectToOriginal), new { shortCode = shortUrl.ShortCode }, shortUrl);
+        return CreatedAtAction(nameof(GetOriginalUrl), new { shortCode = shortUrl.ShortCode }, shortUrl);
     }
 
 
     [HttpGet("{shortCode}")]
-    public async Task<IActionResult> RedirectToOriginal(string shortCode)
+    public async Task<IActionResult> GetOriginalUrl(string shortCode)
     {
         // Get the client's IP address
         var ipAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
@@ -48,12 +46,12 @@ public class UrlController : ControllerBase
         if (result == null)
             return NotFound();
 
-        return Redirect(result.OriginalURL);
+        return Ok(result.OriginalURL);
     }
 
 
     [HttpGet("{shortCode}/stats")]
-    public async Task<ActionResult<StatsDTO>> GetStats(string shortCode)
+    public async Task<ActionResult<StatsDTO>> GetUrlStats(string shortCode)
     {
         var result = await _urlService.GetStats(shortCode);
         if (result == null)

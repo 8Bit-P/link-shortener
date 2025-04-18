@@ -1,17 +1,18 @@
 services:
   linkshortenerapi:
     build:
-      context: ./LinkShortenerAPI  # Points to the directory containing the Dockerfile
-      dockerfile: Dockerfile       # Optional: If the Dockerfile is named differently
+      context: ./LinkShortenerAPI
+      dockerfile: Dockerfile
     container_name: linkshortener-api
     ports:
       - "8080:8080"
       - "8081:8081"
-    depends_on:
-      - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=server=db;port=3306;database=mydatabase;user=myuser;password=mypassword;
+    depends_on:
+      - db
 
   db:
     image: mysql:latest
@@ -25,6 +26,20 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+
+  frontend:
+    build:
+      context: ../frontend/link-shortener
+      dockerfile: Dockerfile
+    container_name: linkshortener-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - linkshortenerapi
+    volumes:
+      - ../frontend/link-shortener:/app
+      - /app/node_modules
+    command: npm start
 
 volumes:
   db_data:
