@@ -15,6 +15,6 @@ export interface Location {
 } 
 
 export interface Clicks {
-    date: string;
+    date: Date;
     clicks: number;
 } 

@@ -17,7 +17,7 @@ public class UrlController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ShortenedUrl>> CreateShortUrl([FromBody] UrlRequest request)
+    public async Task<ActionResult<ShortenedUrlDTO>> CreateShortUrl([FromBody] UrlRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -31,11 +31,35 @@ public class UrlController : ControllerBase
     [HttpGet("{shortCode}")]
     public async Task<IActionResult> RedirectToOriginal(string shortCode)
     {
-        var result = await _urlService.GetUrlByShortCode(shortCode);
+        // Get the client's IP address
+        var ipAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        }
+        var country = await _urlService.GetUserCountryByIpAsync(ipAddress);
+
+        // Get the referer and user-agent from the request headers
+        var referer = Request.Headers.Referer;
+        var userAgent = Request.Headers.UserAgent;
+
+
+        var result = await _urlService.GetUrlByShortCode(shortCode, country, referer, userAgent);
         if (result == null)
             return NotFound();
 
-        return Redirect(result.OriginalUrl);
+        return Redirect(result.OriginalURL);
+    }
+
+
+    [HttpGet("{shortCode}/stats")]
+    public async Task<ActionResult<StatsDTO>> GetStats(string shortCode)
+    {
+        var result = await _urlService.GetStats(shortCode);
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
     }
 
     [HttpPut]
@@ -45,6 +69,8 @@ public class UrlController : ControllerBase
             return BadRequest(ModelState);
 
         var result = await _urlService.UpdateShortUrl(request);
+        if (result == null)
+            return NotFound();
 
         return Ok(result);
     }
