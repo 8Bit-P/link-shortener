@@ -26,22 +26,26 @@
 
     <button
       type="submit"
-      class="bg-zinc-900 text-white px-4 py-2 rounded-md hover:bg-zinc-700 cursor-pointer"
-      [disabled]="form.invalid || loading"
+      class="text-white px-4 py-2 rounded-md hover:bg-zinc-400 cursor-pointer select-none"
+      [class.bg-zinc-900]="!form.invalid && !shortenedUrlResource.isLoading()"
+      [class.bg-gray-400]="form.invalid || shortenedUrlResource.isLoading()"
+      [class.cursor-not-allowed]="
+        form.invalid || shortenedUrlResource.isLoading()
+      "
+      [disabled]="form.invalid || shortenedUrlResource.isLoading()"
     >
-      {{ loading ? "Shortening..." : "Shorten" }}
+      {{ shortenedUrlResource.isLoading() ? "Shortening..." : "Shorten" }}
     </button>
   </form>
 
   @if (form.get('url')?.invalid && form.get('url')?.touched) {
-  <div class="mt-2 text-red-600 text-sm">
+  <div class="mt-1 ml-1 text-red-600 text-sm text-left">
     @if (form.get('url')?.errors?.['required']) {
     <small>URL is required.</small>
-    } @if (form.get('url')?.errors?.['pattern']) {
-    <small>URL must start with http:// or https://</small>
     }
   </div>
-  } @if (shortURL) {
+  } @if (shortenedUrlResource.hasValue() && shortenedUrlResource.value() !==
+  null) {
   <div
     class="mt-4 p-3 bg-gray-100 rounded-md flex items-center justify-between"
   >
@@ -64,7 +68,7 @@
           d="M10.172 13.828a4 4 0 005.656 0L20 9.656a4 4 0 10-5.656-5.656l-1.415 1.414"
         ></path>
       </svg>
-      <span class="text-sm font-medium truncate">{{ shortURL }}</span>
+      <span class="text-sm font-medium truncate">{{ shortenedUrl() }}</span>
     </div>
     <div class="flex items-center gap-2">
       <!-- QR Code Button -->
@@ -75,7 +79,7 @@
       >
         <span class="pi pi-qrcode text-xl"></span>
       </button>
-    
+
       <!-- SVG Button -->
       <button
         type="button"
@@ -98,7 +102,6 @@
         </svg>
       </button>
     </div>
-    
   </div>
   }
 </div>
