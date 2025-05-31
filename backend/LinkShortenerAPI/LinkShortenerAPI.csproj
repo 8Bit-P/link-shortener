@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>e4ca564a-12f9-45c5-b652-b67835818d76</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>.</DockerfileContext>
+		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Using EF Core 8.x.x and compatible MySQL package -->
+		<PackageReference Include="JsonConverter.Abstractions" Version="0.7.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.13" />
+		<!-- Updated to 8.0.13 -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.13" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<!-- Same version -->
+		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
+		<!-- Compatible with EF Core 8.x.x -->
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
+		<!-- If you need SQL Server -->
+
+		<!-- Tools for EF Core -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.13">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+
+		<!-- Container tools (if needed) -->
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+		<PackageReference Include="QRCoder" Version="1.6.0" />
+
+		<!-- Swagger for API documentation -->
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Tests\" />
+	</ItemGroup>
+
+
+
+</Project>
