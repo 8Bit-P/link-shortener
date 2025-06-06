@@ -1,59 +1,140 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  OnInit,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ChartModule } from 'primeng/chart';
 import { ShortenNumberPipe } from '../../pipes/shorten-number.pipe';
-import { Referrer, Location } from '../../../interfaces/StatsInterface';
+import { Stats } from '../../../interfaces/StatsInterface';
+import { URLService } from '../../../services/url.service';
+import { firstValueFrom } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'stats',
-  imports: [SelectButtonModule, FormsModule, ChartModule, ShortenNumberPipe],
+  providers: [MessageService],
+  imports: [
+    SelectButtonModule,
+    FormsModule,
+    ChartModule,
+    ShortenNumberPipe,
+    ToastModule,
+  ],
   templateUrl: './stats.component.html',
   styleUrl: './stats.component.css',
 })
 export class StatsComponent implements OnInit {
+  protected totalClicks: number = 0;
+  protected clicksOptions: any;
+  protected clicksData: any;
 
-  protected totalClicks: number = 1000;
+  protected placeholderUrl = signal<string>('');
 
   protected statOptions: Record<string, string>[] = [
     { label: 'Clicks', value: 'clicks' },
     { label: 'Referrers', value: 'referrers' },
     { label: 'Locations', value: 'locations' },
   ];
-  protected statToShow: string  = "clicks";
+  protected statToShow: string = 'clicks';
 
-  protected clicksData: any;
-  protected clicksOptions: any;
+  protected shortenedUrlStatsResource = resource<Stats | null, string | null>({
+    request: () => this.shortenedUrlShortCode(),
+    loader: async ({ request }) => {
+      if (!request) return null;
 
-  protected referrersData: Referrer[] = []
-  protected locationsData: Location[] = []
+      try {
+        const response: Stats = await firstValueFrom(
+          this.urlService.getUrlStats(request)
+        );
 
-  constructor() {}
+        this.updateTotalClicks(response);
 
-  public ngOnInit(): void {
-    this.initializeClicksChart();
-    this.initializeReferrers();
-    this.initializeLocations();
+        return response;
+      } catch (err: any) {
+        throw new Error(err?.message || 'Unknown error');
+      }
+    },
+  });
+  protected urlToCheck = signal<string | null>(null);
+
+  protected shortenedUrl = signal<string | null>(null);
+
+  private shortenedUrlShortCode = computed(() => {
+    const shortenedUrl = this.shortenedUrl();
+    if (!shortenedUrl) return null;
+
+    try {
+      const normalizedUrl = shortenedUrl.startsWith('http')
+        ? shortenedUrl
+        : `http://${shortenedUrl}`;
+      const url = new URL(normalizedUrl);
+
+      return url.pathname.replace(/^\/+/, '');
+    } catch {
+      return null;
+    }
+  });
+
+  constructor(
+    private messageService: MessageService,
+    private urlService: URLService
+  ) {
+    effect(() => {
+      const error = (this.shortenedUrlStatsResource as any).error?.();
+      if (error) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error retrieving stats',
+          detail: error.message || 'An unexpected error occurred.',
+        });
+      }
+    });
   }
 
-  private initializeClicksChart(): void {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
-  
+  public ngOnInit(): void {
+    this.placeholderUrl.set(window.location.href + 'as34qq32');
+    this.initializeClicksChart();
+  }
+
+  public onCheck(): void {
+    this.shortenedUrl.set(this.urlToCheck());
+  }
+
+  private updateTotalClicks(stats: Stats): void {
+    this.totalClicks = stats.clicks.reduce(
+      (sum, entry) => sum + entry.clicks,
+      0
+    );
+
+    // Create labels and data arrays for the chart
+    const labels = stats.clicks.map((click) => click.dayOfWeek);
+    const data = stats.clicks.map((click) => click.clicks);
+
     this.clicksData = {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      labels,
       datasets: [
         {
-          label: 'Sales', // This label is still used internally but won't show in the legend
-          data: [540, 325, 702, 620, 590, 800, 700],
-          backgroundColor: [
-            'rgb(36, 36, 36)', // Chart color
-          ],
+          label: 'Clicks',
+          data,
+          backgroundColor: ['rgb(36, 36, 36)'],
           borderRadius: 5,
         },
       ],
     };
-  
+  }
+
+  private initializeClicksChart(): void {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColorSecondary = documentStyle.getPropertyValue(
+      '--p-text-muted-color'
+    );
+
     this.clicksOptions = {
       plugins: {
         legend: {
@@ -77,33 +158,20 @@ export class StatsComponent implements OnInit {
           display: true, // Keep Y-axis labels (numbers)
           beginAtZero: true,
           ticks: {
-            color: textColorSecondary, // Color of the Y-axis labels (numbers)
+            color: textColorSecondary,
+            stepSize: 1, 
+            callback: function (value: number) {
+              return Number.isInteger(value) ? value : '';
+            },
           },
           grid: {
             display: false, // Remove Y-axis grid lines
           },
           border: {
             display: false, // Remove Y-axis line
- 
           },
         },
       },
     };
-  }
-  
-  private initializeReferrers(): void {
-    this.referrersData = [
-      { referrer: 'Google', clicks: 150 },
-      { referrer: 'Facebook', clicks: 200 },
-      { referrer: 'Twitter', clicks: 200 },
-      { referrer: 'LinkedIn', clicks: 350 },
-    ];
-  }
-
-  private initializeLocations(): void {
-    this.locationsData = [
-      { country: 'Germany', clicks: 150 },
-      { country: 'Spain', clicks: 200 }
-    ];
   }
 }
