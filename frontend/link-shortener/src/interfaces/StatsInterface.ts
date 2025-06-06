@@ -1,5 +1,5 @@
 export interface Stats {
-    referers: Referrer[];
+    referrers: Referrer[];
     locations: Location[];
     clicks: Clicks[];
 }
@@ -15,6 +15,6 @@ export interface Location {
 } 
 
 export interface Clicks {
-    date: Date;
+    dayOfWeek: string;
     clicks: number;
 } 

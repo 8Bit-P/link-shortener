@@ -59,7 +59,6 @@ export class ShortenUrlComponent implements OnInit {
         this.shortenedUrlResource.hasValue() &&
         this.shortenedUrlResource.value() !== null
       ) {
-        const result = this.shortenedUrlResource.value();
         this.messageService.add({
           severity: 'success',
           summary: 'Short URL created',
